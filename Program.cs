@@ -5,7 +5,7 @@ using AOC24.Solucoes;
 
 internal class Program
 {
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         var serviceProvider = new ServiceCollection()
             .AddSingleton<AOCClient>()
@@ -14,7 +14,7 @@ internal class Program
             .BuildServiceProvider();
         
         var app = serviceProvider.GetRequiredService<Application>();
-        app.Run(args[0]);
+        await app.Run(args[0]);
     }
 }
 
@@ -27,7 +27,7 @@ internal class Application
         this.gerenciadorDeSolucoes = gerenciadorDeInput;
     }
 
-    public void Run(string arg) 
+    public async Task Run(string arg) 
     {
         Console.WriteLine("AOC'24");
 
@@ -35,13 +35,13 @@ internal class Application
         {
             foreach(int dia in this.gerenciadorDeSolucoes.DiasComSolucao()) 
             {
-                this.gerenciadorDeSolucoes.ObtemSolucaoDoDia(dia).GetAwaiter().GetResult();
+                await this.gerenciadorDeSolucoes.ObtemSolucaoDoDia(dia);
             }
             return;
         } 
 
         int diaArg = int.Parse(arg);
-        this.gerenciadorDeSolucoes.ObtemSolucaoDoDia(diaArg).GetAwaiter().GetResult();
+        await this.gerenciadorDeSolucoes.ObtemSolucaoDoDia(diaArg);
     }
 
 }

@@ -23,7 +23,7 @@ public class GerenciadorDeSolucoes
 
         Console.WriteLine($"== Dia {dia:D2} ===");
         Console.WriteLine($"Parte1: {solucaoParte1}");
-        Console.WriteLine($"Parte1: {solucaoParte2}");
+        Console.WriteLine($"Parte2: {solucaoParte2}");
         Console.WriteLine();
     }
 

@@ -4,12 +4,12 @@ namespace AOC24.Utils;
 
 public static class Listas
 {
-    public static (List<int>, List<int>) ParseLists(string file)
+    public static (List<int>, List<int>) ParseListDuplaInts(string txt)
     {
         (List<int>, List<int>) listas;
         listas = (new List<int>(), new List<int>());
 
-        foreach (string line in file.Split('\n'))
+        foreach (string line in txt.Split('\n'))
         {
             try
             {
