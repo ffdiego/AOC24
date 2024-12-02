@@ -23,4 +23,21 @@ public static class Listas
         return listas;
     }
 
+    public static List<List<int>> ParseListaDeListas(string txt) 
+    {
+        List<List<int>> listaDeListas = new();
+
+        foreach (string line in txt.Split('\n'))
+        {
+            try
+            {
+                List<int> lista = line.Split(" ").Select(a => int.Parse(a)).ToList();
+                listaDeListas.Add(lista);
+            }
+            catch (Exception) {}
+        }
+
+        return listaDeListas;
+    }
+
 }
