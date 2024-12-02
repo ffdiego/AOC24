@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using AOC24.Inputs;
-using AOC24.Solucoes;
+using AOC24.Utils;
 
 
 internal class Program
@@ -14,7 +13,7 @@ internal class Program
             .BuildServiceProvider();
         
         var app = serviceProvider.GetRequiredService<Application>();
-        await app.Run(args[0]);
+        await app.Run(args.FirstOrDefault());
     }
 }
 
@@ -27,7 +26,7 @@ internal class Application
         this.gerenciadorDeSolucoes = gerenciadorDeInput;
     }
 
-    public async Task Run(string arg) 
+    public async Task Run(string? arg) 
     {
         Console.WriteLine("AOC'24");
 

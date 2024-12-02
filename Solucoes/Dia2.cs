@@ -3,9 +3,8 @@ using System.Collections.Generic;
 
 namespace AOC24.Solucoes;
 
-public class Day2 : ISolucionador
+public class Dia2 : ISolucionador
 {
-    private readonly int[] diferencasAceitaveis = { 1, 2, 3 };
     private bool ListaSegura(List<int> lista) 
     {
         bool ehCrescente = lista[0] < lista[1];
@@ -16,7 +15,7 @@ public class Day2 : ISolucionador
             int diferenca = lista[i + 1] - lista[i];
 
             bool NaoRespeitaCrescente = (diferenca > 0) != ehCrescente;
-            bool NaoRespeitaLimite = !diferencasAceitaveis.Contains(Math.Abs(diferenca));
+            bool NaoRespeitaLimite = (diferenca == 0 || Math.Abs(diferenca) > 3);
 
             if (NaoRespeitaCrescente || NaoRespeitaLimite)
             {

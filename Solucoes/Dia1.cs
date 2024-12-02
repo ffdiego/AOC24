@@ -2,7 +2,7 @@ using AOC24.Utils;
 
 namespace AOC24.Solucoes;
 
-public class Day1 : ISolucionador
+public class Dia1 : ISolucionador
 {
     public string SolucaoParte1(string input)
     {

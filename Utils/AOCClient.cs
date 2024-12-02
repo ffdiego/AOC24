@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 
-namespace AOC24.Inputs;
+namespace AOC24.Utils;
 
 public class AOCClient : IDisposable
 {
@@ -9,7 +9,7 @@ public class AOCClient : IDisposable
     private const string baseURI = "https://adventofcode.com/2024/";
     private string pastaCacheInputs;
     private HttpClient httpClient;
-    public AOCClient() 
+    public AOCClient()
     {
         CookieContainer cookieContainer = new CookieContainer();
         cookieContainer.Add(
@@ -17,35 +17,35 @@ public class AOCClient : IDisposable
             new Cookie("session", Environment.GetEnvironmentVariable(envSessao) ?? throw new ArgumentNullException("PATH:envSessao"))
         );
 
-        HttpClientHandler httpClientHandler= new HttpClientHandler() 
+        HttpClientHandler httpClientHandler = new HttpClientHandler()
         {
             CookieContainer = cookieContainer
         };
 
-        this.httpClient= new HttpClient(httpClientHandler) 
+        httpClient = new HttpClient(httpClientHandler)
         {
             BaseAddress = new Uri(baseURI)
         };
 
-        this.pastaCacheInputs = Path.Combine(Directory.GetCurrentDirectory(), "cacheinputs/");
-        if (!Directory.Exists(this.pastaCacheInputs)) 
+        pastaCacheInputs = Path.Combine(Directory.GetCurrentDirectory(), "cacheinputs/");
+        if (!Directory.Exists(pastaCacheInputs))
         {
-            Directory.CreateDirectory(this.pastaCacheInputs);
+            Directory.CreateDirectory(pastaCacheInputs);
         }
     }
 
-    public async Task<string> GetInputAsync(int dia, bool forcaRefreshNoCache = false) 
+    public async Task<string> GetInputAsync(int dia, bool forcaRefreshNoCache = false)
     {
-        string nomeArquivoCache = $"{pastaCacheInputs}/{dia}.txt"; 
+        string nomeArquivoCache = $"{pastaCacheInputs}/{dia}.txt";
 
-        if (File.Exists(nomeArquivoCache) && !forcaRefreshNoCache) 
+        if (File.Exists(nomeArquivoCache) && !forcaRefreshNoCache)
         {
             return File.ReadAllText(nomeArquivoCache);
         }
 
-        var resposta = await this.httpClient.GetAsync($"day/{dia}/input");
+        var resposta = await httpClient.GetAsync($"day/{dia}/input");
 
-        if (!resposta.IsSuccessStatusCode) 
+        if (!resposta.IsSuccessStatusCode)
         {
             throw new Exception($"Falha ao obter o input do dia {dia}");
         }
@@ -57,8 +57,8 @@ public class AOCClient : IDisposable
         return respostaConteudo;
     }
 
-    public void Dispose() 
+    public void Dispose()
     {
-        this.httpClient.Dispose();
+        httpClient.Dispose();
     }
 }
