@@ -4,6 +4,18 @@ namespace AOC24.Utils;
 
 public static class Listas
 {
+    public static List<List<char>> ParseMatrizDeTexto(string txt)
+    {
+        List<List<char>> listaDeListas = new();
+
+        foreach (string line in txt.Split('\n'))
+        {
+            listaDeListas.Add(line.ToList());
+        }
+
+        return listaDeListas;
+    }
+
     public static (List<int>, List<int>) ParseListDuplaInts(string txt)
     {
         (List<int>, List<int>) listas;
