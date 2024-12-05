@@ -46,13 +46,56 @@ namespace AOC24.Solucoes
                 {
                     foreach (var direcao in Direcoes)
                     {
-                        for (int i = 0; i < palavra.Length; i++)
+                        if(PossuiTextoNestaDirecao(matrizDeTexto, palavra, x, y, direcao))
                         {
-                            if(PossuiTextoNestaDirecao(matrizDeTexto, palavra, x, y, direcao))
+                            acumulador++;
+                        }
+                    }
+                }
+            }
+
+            return acumulador;
+        }
+
+        private int FrequenciaDePalavraMASemX(List<List<char>> matrizDeTexto)
+        {
+            bool EhUmXMAS(int x, int y)
+            {
+                try
+                {
+                    char nw = matrizDeTexto[y - 1][x - 1];
+                    char ne = matrizDeTexto[y - 1][x + 1];
+                    char sw = matrizDeTexto[y + 1][x - 1];
+                    char se = matrizDeTexto[y + 1][x + 1];
+
+                    string listaChars = $"{nw}{ne}{sw}{se}";
+
+                    return listaChars.Count(c => c == 'S') == 2 && 
+                           listaChars.Count(c => c == 'M') == 2 &&
+                           (nw != se) &&
+                           (sw != ne);
+                    
+                } catch(Exception) { }
+
+                return false;
+            }
+
+            int acumulador = 0;
+
+            for (int y = 0; y < matrizDeTexto.Count; y++)
+            {
+                for (int x = 0; x < matrizDeTexto[y].Count; x++)
+                {
+                    if (matrizDeTexto[y][x] == 'A')
+                    {
+                        try
+                        {
+                            if (EhUmXMAS(x, y))
                             {
                                 acumulador++;
                             }
                         }
+                        catch (Exception) { }
                     }
                 }
             }
@@ -70,7 +113,9 @@ namespace AOC24.Solucoes
 
         public string SolucaoParte2(string input)
         {
-            return ":D";
+            List<List<char>> entrada = Utils.Listas.ParseMatrizDeTexto(input);
+
+            return FrequenciaDePalavraMASemX(entrada).ToString();
         }
     }
 }
