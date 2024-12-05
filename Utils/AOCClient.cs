@@ -50,7 +50,7 @@ public class AOCClient : IDisposable
             throw new Exception($"Falha ao obter o input do dia {dia}");
         }
 
-        string respostaConteudo = await resposta.Content.ReadAsStringAsync();
+        string respostaConteudo = (await resposta.Content.ReadAsStringAsync()).TrimEnd();
 
         File.WriteAllText(nomeArquivoCache, respostaConteudo);
 

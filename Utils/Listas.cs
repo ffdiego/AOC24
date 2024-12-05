@@ -1,9 +1,31 @@
 using System;
+using System.Collections.Generic;
 
 namespace AOC24.Utils;
 
 public static class Listas
 {
+    public static (List<(int, int)> regrasOrdenacao, List<List<int>> numeroPaginas) ParseiaRegrasManuais(string txt)
+    {
+        List<(int, int)> regrasOrdenacao = [];
+        List<List<int>> numeroPaginas = [];
+
+        foreach (string line in txt.Split("\n\n")[0].Split('\n'))
+        {
+            string[] numeros = line.Split("|");
+            (int, int) parseados = (int.Parse(numeros[0]), int.Parse(numeros[1]));
+            regrasOrdenacao.Add(parseados);
+        }
+
+        foreach (string line in txt.Split("\n\n")[1].Split('\n'))
+        {
+            var numeros = line.Split(",").Select(n => int.Parse(n));
+            numeroPaginas.Add(numeros.ToList());
+        }
+
+        return (regrasOrdenacao, numeroPaginas);
+    } 
+
     public static List<List<char>> ParseMatrizDeTexto(string txt)
     {
         List<List<char>> listaDeListas = new();
