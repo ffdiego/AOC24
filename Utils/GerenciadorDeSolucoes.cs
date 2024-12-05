@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using AOC24.Solucoes;
 
 namespace AOC24.Utils;
@@ -18,12 +19,18 @@ public class GerenciadorDeSolucoes
         string input = await ObtemInput(dia);
 
         ISolucionador solucionador = InstanciarSolucao(dia);
+
+        Stopwatch swParte1 = Stopwatch.StartNew();
         string solucaoParte1 = solucionador.SolucaoParte1(input);
+        swParte1.Stop();
+
+        Stopwatch swParte2 = Stopwatch.StartNew();
         string solucaoParte2 = solucionador.SolucaoParte2(input);
+        swParte2.Stop();
 
         Console.WriteLine($"=== Dia {dia:D2} ===");
-        Console.WriteLine($"Parte1: {solucaoParte1}");
-        Console.WriteLine($"Parte2: {solucaoParte2}");
+        Console.WriteLine($"Parte1: {solucaoParte1} ({swParte1.ElapsedMilliseconds}ms)");
+        Console.WriteLine($"Parte2: {solucaoParte2} ({swParte2.ElapsedMilliseconds}ms)");
         Console.WriteLine();
     }
 
