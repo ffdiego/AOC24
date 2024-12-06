@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace AOC24.Utils;
 
-public static class Listas
+public static class Parser
 {
     public static (List<(int, int)> regrasOrdenacao, List<List<int>> numeroPaginas) ParseiaRegrasManuais(string txt)
     {

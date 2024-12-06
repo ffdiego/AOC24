@@ -105,7 +105,7 @@ namespace AOC24.Solucoes
 
         public string SolucaoParte1(string input)
         {
-            List<List<char>> entrada = Utils.Listas.ParseMatrizDeTexto(input);
+            List<List<char>> entrada = Utils.Parser.ParseMatrizDeTexto(input);
             string palavra = "XMAS";
 
             return FrequenciaDePalavraNaMatriz(entrada, palavra).ToString();
@@ -113,7 +113,7 @@ namespace AOC24.Solucoes
 
         public string SolucaoParte2(string input)
         {
-            List<List<char>> entrada = Utils.Listas.ParseMatrizDeTexto(input);
+            List<List<char>> entrada = Utils.Parser.ParseMatrizDeTexto(input);
 
             return FrequenciaDePalavraMASemX(entrada).ToString();
         }

@@ -1,5 +1,4 @@
-﻿using AOC24.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace AOC24.Solucoes
 {
-    internal class Dia5 : ISolucionador
+    internal class Dia6 : ISolucionador
     {
         public string SolucaoParte1(string input)
         {
-            var a = Parser.ParseiaRegrasManuais(input);
-
             return ":D";
         }
 
