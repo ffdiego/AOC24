@@ -7,29 +7,34 @@ using System.Threading.Tasks;
 
 namespace AOC24.Solucoes
 {
-    internal class Dia6 : ISolucionador
+    internal static class Objetos
     {
-        private char GetElemento((int x, int y) pos, List<List<char>> mapa) 
-        {
-            return mapa.ElementAtOrDefault(pos.y)?.ElementAtOrDefault(pos.x) ?? default(char);
-        }
-        private void EscreverMapaNoDisco(List<List<char>> mapa)
-        {
-            File.WriteAllText("mapa.txt", string.Join("\n", mapa.Select(innerList => new string(innerList.ToArray()))));
-        }
+        public const char Obstaculo = '#';
+        public const char InicioGuarda = '^';
+    }
 
-        private readonly (int dx, int dy)[] Direcoes =
+    internal class Mapa
+    {
+        private List<List<char>> mapa;
+        public int Tamanho { get; private set; }
+        public char GetElementoDoMapa((int x, int y) pos)
         {
-            (0, -1), (1, 0), (0, 1), (-1, 0)
-        };
-
-        private (int x, int y) EncontraPosicaoDoGuarda(List<List<char>> mapa)
-        {
-            for (int y = 0; y < mapa.Count; y++)
+            if (PosicaoObstaculoHipotetico.HasValue && PosicaoObstaculoHipotetico == pos)
             {
-                for (int x = 0;  x < mapa[y].Count; x++)
+                return Objetos.Obstaculo;
+            }
+            return this.mapa.ElementAtOrDefault(pos.y)?.ElementAtOrDefault(pos.x) ?? default;
+        }
+
+        public (int x, int y)? PosicaoObstaculoHipotetico { get; set; }
+
+        public (int x, int y) EncontraPosicaoDoGuarda()
+        {
+            for (int y = 0; y < this.mapa.Count; y++)
+            {
+                for (int x = 0; x < this.mapa[y].Count; x++)
                 {
-                    if (mapa[y][x] == '^')
+                    if (mapa[y][x] == Objetos.InicioGuarda)
                         return (x, y);
                 }
             }
@@ -37,96 +42,132 @@ namespace AOC24.Solucoes
             throw new Exception("Posicao inicial não encontrada");
         }
 
-        private int QuantidadeDePosicoesDiferentes((int x, int y) posicaoInicial, List<List<char>> mapa, bool procuraLoops = false)
+        public Mapa(List<List<char>> mapa)
         {
-            bool ChecaExistenciaDeLoop((int x, int y) posicaoOriginal, (int dx, int dy) direcao)
-            {
-                (int x, int y) posicao = (posicaoOriginal.x + direcao.dx, posicaoOriginal.y + direcao.dy);
+            this.mapa = mapa;
+            this.Tamanho = mapa.Count;
+        }
+    }
 
-                if (mapa.ElementAtOrDefault(posicao.y)?.ElementAtOrDefault(posicao.x) != 'X')
-                {
-                    return false;
-                }
+    internal class Guarda
+    {
+        private readonly Mapa mapa;
+        private (int x, int y) posicao;
+        private int indexDirecao;
+        private readonly HashSet<((int, int), (int, int))> estados;
+        private (int dx, int dy) direcaoAtual => direcoes[this.indexDirecao % 4];
+        private readonly (int dx, int dy)[] direcoes =
+        {
+            (0, -1), (1, 0), (0, 1), (-1, 0)
+        };
 
-
-                while (EhPosicaoDentroDoMapa(posicao))
-                {
-                    if (GetElemento(posicao, mapa) == '.')
-                    {
-                        break;
-                    }
-
-                    if (GetElemento(posicao, mapa) == '#')
-                    {
-                        EscreverMapaNoDisco(mapa);
-                        return true;
-                    }
-
-                    posicao.x += direcao.dx;
-                    posicao.y += direcao.dy;
-                }
-
-                return false;
-            }
-
-            bool EhPosicaoDentroDoMapa((int x, int y) posicao) => (posicao.x is >= 0 and < 130) && (posicao.y is >= 0 and < 130);
-
-            int indiceDirecao = 0;
-
-            (int dx, int dy) getNovaDirecao(int idx) => Direcoes[idx % 4];
-
-            (int dx, int dy) direcao = getNovaDirecao(indiceDirecao++);
-            (int x, int y) posicao = posicaoInicial;
-
-            while (EhPosicaoDentroDoMapa(posicao))
-            {
-                if(mapa[posicao.y][posicao.x] == '.')
-                {
-                    mapa[posicao.y][posicao.x] = 'X';
-                }
-
-                if (procuraLoops && 
-                    ChecaExistenciaDeLoop(posicao, getNovaDirecao(indiceDirecao)) &&
-                    EhPosicaoDentroDoMapa((posicao.x + direcao.dx, posicao.y + direcao.dy)))
-                {
-                    mapa[posicao.y + direcao.dy][posicao.x + direcao.dx] = 'O';
-                    EscreverMapaNoDisco(mapa);
-                }
-
-                (int x, int y) novaPosicao = (posicao.x + direcao.dx, posicao.y + direcao.dy);
-
-                while (GetElemento(novaPosicao, mapa) == '#')
-                {
-                    direcao = getNovaDirecao(indiceDirecao++);
-                    novaPosicao = (posicao.x + direcao.dx, posicao.y + direcao.dy);
-                }
-
-                posicao.x = novaPosicao.x;
-                posicao.y = novaPosicao.y;
-            }
-
-            char procurado = procuraLoops ? 'O' : 'X';
-
-            return mapa.SelectMany(linha => linha).Count(c => c == procurado);
+        private char OlharPraFrente()
+        {
+            return mapa.GetElementoDoMapa((posicao.x + direcaoAtual.dx, posicao.y + direcaoAtual.dy));
         }
 
+        private bool AndarPraFrente()
+        {
+            this.posicao = (posicao.x + direcaoAtual.dx, posicao.y + direcaoAtual.dy);
+            return this.estados.Add((this.posicao, this.direcaoAtual));
+        }
+
+        private void Virar()
+        {
+            this.indexDirecao++;
+        }
+
+        private bool EstouDentroDoMapa()
+        {
+            return (posicao.x >= 0 && posicao.x < mapa.Tamanho) && (posicao.y >= 0 && posicao.y < mapa.Tamanho);
+        }
+
+        public bool Step()
+        {
+            while (OlharPraFrente() == Objetos.Obstaculo)
+            {
+                this.Virar();
+            }
+
+            return this.AndarPraFrente();
+        }
+
+        public int QuantidadeDeEspacos()
+        {
+            while (EstouDentroDoMapa())
+            {
+                this.Step();
+            }
+
+            return estados.DistinctBy(e => e.Item1).Count();
+        }
+
+        public bool EstouNumLoop()
+        {
+            while (EstouDentroDoMapa())
+            {
+                if (!this.Step())
+                    return true;
+            }
+
+            return false;
+        }
+
+        public Guarda(Mapa mapa, (int x, int y) posicao, int indexDirecao)
+        {
+            this.mapa = mapa;
+            this.posicao = posicao;
+            this.indexDirecao = indexDirecao;
+            this.estados = [];
+        }
+
+        public Guarda(Guarda guarda)
+        {
+            this.mapa = guarda.mapa;
+            this.posicao = guarda.posicao;
+            this.indexDirecao = guarda.indexDirecao;
+            this.estados = [];
+        }
+    }
+
+    internal class Dia6 : ISolucionador
+    {
         public string SolucaoParte1(string input)
         {
-            return ":D";
-            var mapa = Parser.ParseMatrizDeTexto(input);
+            var mapaTxt = Parser.ParseMatrizDeTexto(input);
 
-            var posicaoInicial = EncontraPosicaoDoGuarda(mapa);
+            Mapa mapa = new(mapaTxt);
 
-            return QuantidadeDePosicoesDiferentes(posicaoInicial, mapa).ToString();
+            Guarda guarda = new Guarda(mapa, mapa.EncontraPosicaoDoGuarda(), 0);
+
+            return guarda.QuantidadeDeEspacos().ToString();
         }
 
         public string SolucaoParte2(string input)
         {
-            var mapa = Parser.ParseMatrizDeTexto(input);
+            var mapaTxt = Parser.ParseMatrizDeTexto(input);
+            
+            Mapa mapa = new(mapaTxt);
+            var posicaoInicial = mapa.EncontraPosicaoDoGuarda();
 
-            var posicaoInicial = EncontraPosicaoDoGuarda(mapa);
+            int loops = 0;
 
-            return QuantidadeDePosicoesDiferentes(posicaoInicial, mapa, true).ToString();
+            for (int x = 0; x < mapa.Tamanho; x++)
+            {
+                for (int y = 0; y < mapa.Tamanho; y++)
+                {
+                    mapa.PosicaoObstaculoHipotetico = (x, y);
+
+                    Guarda guarda = new Guarda(mapa, posicaoInicial, 0);
+
+                    if (guarda.EstouNumLoop())
+                    {
+                        loops++;
+                    }
+                }
+            }
+
+            return loops.ToString();
         }
     }
 }
