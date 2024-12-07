@@ -19,14 +19,8 @@ namespace AOC24.Solucoes
         public int Tamanho { get; private set; }
         public char GetElementoDoMapa((int x, int y) pos)
         {
-            if (PosicaoObstaculoHipotetico.HasValue && PosicaoObstaculoHipotetico == pos)
-            {
-                return Objetos.Obstaculo;
-            }
             return this.mapa.ElementAtOrDefault(pos.y)?.ElementAtOrDefault(pos.x) ?? default;
         }
-
-        public (int x, int y)? PosicaoObstaculoHipotetico { get; set; }
 
         public (int x, int y) EncontraPosicaoDoGuarda()
         {
@@ -63,8 +57,17 @@ namespace AOC24.Solucoes
 
         private char OlharPraFrente()
         {
-            return mapa.GetElementoDoMapa((posicao.x + direcaoAtual.dx, posicao.y + direcaoAtual.dy));
+            var pos = (posicao.x + direcaoAtual.dx, posicao.y + direcaoAtual.dy);
+
+            if (PosicaoObstaculoHipotetico.HasValue && PosicaoObstaculoHipotetico == pos)
+            {
+                return Objetos.Obstaculo;
+            }
+
+            return mapa.GetElementoDoMapa(pos);
         }
+
+        public (int x, int y)? PosicaoObstaculoHipotetico { get; set; }
 
         private bool AndarPraFrente()
         {
@@ -154,17 +157,22 @@ namespace AOC24.Solucoes
 
             for (int x = 0; x < mapa.Tamanho; x++)
             {
-                for (int y = 0; y < mapa.Tamanho; y++)
+                Parallel.For(0, mapa.Tamanho, (y) =>
                 {
-                    mapa.PosicaoObstaculoHipotetico = (x, y);
+                    if ((x,y) == posicaoInicial)
+                    {
+                        return;
+                    }
 
                     Guarda guarda = new Guarda(mapa, posicaoInicial, 0);
+
+                    guarda.PosicaoObstaculoHipotetico = (x, y);
 
                     if (guarda.EstouNumLoop())
                     {
                         loops++;
                     }
-                }
+                });
             }
 
             return loops.ToString();
