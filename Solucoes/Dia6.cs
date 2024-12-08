@@ -137,7 +137,7 @@ namespace AOC24.Solucoes
     {
         public string SolucaoParte1(string input)
         {
-            var mapaTxt = Parser.ParseMatrizDeTexto(input);
+            var mapaTxt = Parser.MatrizDeChars(input);
 
             Mapa mapa = new(mapaTxt);
 
@@ -148,7 +148,7 @@ namespace AOC24.Solucoes
 
         public string SolucaoParte2(string input)
         {
-            var mapaTxt = Parser.ParseMatrizDeTexto(input);
+            var mapaTxt = Parser.MatrizDeChars(input);
             
             Mapa mapa = new(mapaTxt);
             var posicaoInicial = mapa.EncontraPosicaoDoGuarda();

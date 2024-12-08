@@ -6,14 +6,14 @@ public class Dia1 : ISolucionador
 {
     public string SolucaoParte1(string input)
     {
-        var listas = Parser.ParseListDuplaInts(input);
+        var listas = Parser.ListaDuplaInts(input);
 
         return SomaDasDistancias(listas.Item1, listas.Item2).ToString();
     }
 
     public string SolucaoParte2(string input)
     {
-        var listas = Parser.ParseListDuplaInts(input);
+        var listas = Parser.ListaDuplaInts(input);
 
         return Similaridade(listas.Item1, listas.Item2).ToString();
     }

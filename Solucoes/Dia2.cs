@@ -28,7 +28,7 @@ public class Dia2 : ISolucionador
 
     public string SolucaoParte1(string input)
     {
-        var listaDeListas = Utils.Parser.ParseListaDeListas(input);
+        var listaDeListas = Utils.Parser.ListaDeListaDeInts(input);
 
         int listasSeguras = 0;
 
@@ -45,7 +45,7 @@ public class Dia2 : ISolucionador
 
     public string SolucaoParte2(string input)
     {
-        var listaDeListas = Utils.Parser.ParseListaDeListas(input);
+        var listaDeListas = Utils.Parser.ListaDeListaDeInts(input);
 
         int listasSeguras = 0;
 

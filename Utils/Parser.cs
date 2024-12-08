@@ -26,7 +26,12 @@ public static class Parser
         return (regrasOrdenacao, numeroPaginas);
     } 
 
-    public static List<List<char>> ParseMatrizDeTexto(string txt)
+    public static List<string> LinhasDeTexto(string txt)
+    {
+        return txt.Split('\n').ToList();
+    }
+
+    public static List<List<char>> MatrizDeChars(string txt)
     {
         List<List<char>> listaDeListas = new();
 
@@ -38,7 +43,7 @@ public static class Parser
         return listaDeListas;
     }
 
-    public static (List<int>, List<int>) ParseListDuplaInts(string txt)
+    public static (List<int>, List<int>) ListaDuplaInts(string txt)
     {
         (List<int>, List<int>) listas;
         listas = (new List<int>(), new List<int>());
@@ -57,7 +62,7 @@ public static class Parser
         return listas;
     }
 
-    public static List<List<int>> ParseListaDeListas(string txt) 
+    public static List<List<int>> ListaDeListaDeInts(string txt) 
     {
         List<List<int>> listaDeListas = new();
 
