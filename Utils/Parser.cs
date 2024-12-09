@@ -43,6 +43,11 @@ public static class Parser
         return listaDeListas;
     }
 
+    public static string MatrizDeChars(List<List<char>> entrada)
+    {
+        return string.Join("\n", entrada.Select(linha => new string(linha.ToArray())));
+    }
+
     public static (List<int>, List<int>) ListaDuplaInts(string txt)
     {
         (List<int>, List<int>) listas;
