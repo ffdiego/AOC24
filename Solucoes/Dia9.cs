@@ -10,117 +10,55 @@ namespace AOC24.Solucoes
 {
     internal class Dia9 : ISolucionador
     {
-        internal interface IBloco
-        {
-            int Tamanho { get; }
-        };
-
-        internal class Arquivo : IBloco
-        {
-            static private int id = 0;
-            public int Id { get; private set; }
-            public int Tamanho { get; }
-
-            public Arquivo(int tamanho)
-            {
-                this.Id = Arquivo.id++;
-                Tamanho = tamanho;
-            }
-        }
-
-        internal class Espaco : IBloco
-        {
-            public int Tamanho { get; }
-
-            public Espaco(int tamanho)
-            {
-                Tamanho = tamanho;
-            }
-
-        }
-
         internal class Disco
         {
-            private List<IBloco> disco;
-            private Stack<Arquivo> arquivos;
+            private const int idEspaco = -1;
+            private static int ultimoIdDado = -1;
+            private List<int> disco;
+            private Stack<(int id, int tamanho)> arquivos;
 
-            private bool SwapBloco(int a, int b)
-            {
-                if (disco.ElementAtOrDefault(a) == null || disco.ElementAtOrDefault(b) == null)
-                {
-                    return false;
-                }
-
-                IBloco blocoA = disco[a];
-                IBloco blocoB = disco[b];
-
-                disco[a] = blocoB;
-                disco[b] = blocoA;
-
-                return true;
-            }
+            private void SwapBloco(int a, int b) => (disco[a], disco[b]) = (disco[b], disco[a]);
 
             public override string ToString()
             {
                 StringBuilder sb = new StringBuilder(disco.Count);
 
-                for (int i = 0; i < disco.Count;)
+                for (int i = 0; i < disco.Count; i++)
                 {
-                    IBloco bloco = disco[i];
-                    if (bloco is Arquivo arquivo)
+                    int id = disco[i];
+                    if (id >= 0)
                     {
-                        sb.Append(arquivo.Id);
+                        sb.Append(id);
                     }
                     else
                     {
                         sb.Append('.');
                     }
-
-                    i++;
                 }
 
                 return sb.ToString();
             }
 
-            public void Fragmenta()
+            public void CompactaFragmentando()
             {
-                while (arquivos.Count > 0)
+                int cursorA = 0;
+                int cursorB = disco.Count - 1;
+
+                while (cursorA <= cursorB)
                 {
-                    Arquivo arquivo = arquivos.Pop();
+                    bool temEspacoNoA = disco[cursorA] == -1;
+                    bool temArquivoNoB = disco[cursorB] > 0;
 
-                    int cursorDesce = disco.Count - 1;
-                    int cursorSobe = 0;
-
-                    int tamanhoArmazenadoArquivo = 0;
-                    while (tamanhoArmazenadoArquivo < arquivo.Tamanho)
+                    if (temEspacoNoA && temArquivoNoB)
                     {
-                        while (disco[cursorDesce] != arquivo)
-                        {
-                            if (cursorDesce <= 0)
-                            {
-                                return;
-                            }
-
-                            cursorDesce--;
-                        }
-
-                        while (disco[cursorSobe] is not Espaco)
-                        {
-                            if (cursorSobe >= cursorDesce || cursorSobe >= disco.Count - 1)
-                            {
-                                return;
-                            }
-
-                            cursorSobe++;
-                        }
-
-                        if (!SwapBloco(cursorSobe, cursorDesce))
-                        {
-                            return;
-                        }
-
-                        cursorDesce--;
-                        tamanhoArmazenadoArquivo++;
+                        SwapBloco(cursorA, cursorB);
+                        cursorB--;
+                        cursorA++;
+                    } 
+                    else
+                    {
+                        if (!temEspacoNoA) cursorA++;
+                        if (!temArquivoNoB) cursorB--;
                     }
                 }
             }
@@ -131,9 +69,10 @@ namespace AOC24.Solucoes
 
                 for (int i = 0; i < disco.Count; i++)
                 {
-                    if (disco[i] is Arquivo arquivo)
+                    int idBloco = disco[i];
+                    if (idBloco >= 0)
                     {
-                        checksum += i * arquivo.Id;
+                        checksum += i * idBloco;
                     }
                 }
 
@@ -152,16 +91,16 @@ namespace AOC24.Solucoes
                 {
                     if (tamanhoBloco > 0)
                     {
-                        IBloco bloco = ehEspaco ? new Espaco(tamanhoBloco) : new Arquivo(tamanhoBloco);
+                        int id = ehEspaco ? Disco.idEspaco : ++Disco.ultimoIdDado;
 
-                        if (bloco is Arquivo arquivo)
+                        if (!ehEspaco)
                         {
-                            this.arquivos.Push(arquivo);
+                            this.arquivos.Push((id, tamanhoBloco));
                         }
                         
                         for (int j = 0; j < tamanhoBloco; j++)
                         {
-                            disco.Add(bloco);
+                            disco.Add(id);
                         }
                     }
 
@@ -175,7 +114,7 @@ namespace AOC24.Solucoes
         {
             Disco disco = new Disco(input);
 
-            disco.Fragmenta();
+            disco.CompactaFragmentando();
 
             return disco.Checksum().ToString();
         }
