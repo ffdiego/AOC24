@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace AOC24.Utils;
 
@@ -11,7 +12,9 @@ public static class Parser
 
         foreach (char c in input)
         {
-            result.Add(c & 15); //hack pra converter char em int
+            // Da forma que os algarismos são codificados no padrão ASCII, 
+            // os 4 primeiros bits resultam no representação númerica de si.
+            result.Add(c & 0b1111); 
         }
 
         return result;
@@ -91,6 +94,25 @@ public static class Parser
                 listaDeListas.Add(lista);
             }
             catch (Exception) {}
+        }
+
+        return listaDeListas;
+    }
+
+    public static List<List<int>> MatrizDeInts(string txt)
+    {
+        List<List<int>> listaDeListas = new();
+
+        foreach (string line in txt.Split('\n'))
+        {
+            List<int> lista = [];
+
+            foreach (char c in line)
+            {
+                lista.Add(c & 0b1111);
+            }
+
+            listaDeListas.Add(lista);
         }
 
         return listaDeListas;
