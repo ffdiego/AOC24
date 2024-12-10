@@ -46,7 +46,7 @@ public class GerenciadorDeSolucoes
         return input;
     }
 
-    public int[] DiasComSolucao()
+    public List<int> DiasComSolucao()
     {
         List<int> dias = new();
         for (int i = 1; i <= 30; i++)
@@ -57,7 +57,7 @@ public class GerenciadorDeSolucoes
             }
         }
 
-        return dias.ToArray();
+        return dias;
     }
 
     private static ISolucionador InstanciarSolucao(int dia)

@@ -29,18 +29,24 @@ internal class Application
     public async Task Run(string? arg) 
     {
         Console.WriteLine("AOC'24");
+        List<int> diasARodar = [];
 
         if (string.IsNullOrWhiteSpace(arg)) 
         {
-            foreach(int dia in this.gerenciadorDeSolucoes.DiasComSolucao()) 
-            {
-                await this.gerenciadorDeSolucoes.ObtemSolucaoDoDia(dia);
-            }
-            return;
+            int diaMaisRecente = this.gerenciadorDeSolucoes.DiasComSolucao().Max();
+
+            diasARodar.Add(diaMaisRecente);
         } 
 
-        int diaArg = int.Parse(arg);
-        await this.gerenciadorDeSolucoes.ObtemSolucaoDoDia(diaArg);
+        else if (arg == "all")
+        {
+            diasARodar.AddRange(this.gerenciadorDeSolucoes.DiasComSolucao());
+        }
+
+        foreach(int dia in diasARodar)
+        {
+            await this.gerenciadorDeSolucoes.ObtemSolucaoDoDia(dia);
+        }
     }
 
 }
