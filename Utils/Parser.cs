@@ -5,6 +5,18 @@ namespace AOC24.Utils;
 
 public static class Parser
 {
+    public static List<int> ListaDeInts(string input)
+    {
+        List<int> result = [];
+
+        foreach (char c in input)
+        {
+            result.Add(c & 15); //hack pra converter char em int
+        }
+
+        return result;
+    }
+
     public static (List<(int, int)> regrasOrdenacao, List<List<int>> numeroPaginas) ParseiaRegrasManuais(string txt)
     {
         List<(int, int)> regrasOrdenacao = [];
