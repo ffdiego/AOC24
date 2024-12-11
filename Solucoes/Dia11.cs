@@ -12,19 +12,26 @@ namespace AOC24.Solucoes
         internal class Pedras
         {
             private List<int> pedras;
-            private Dictionary<(int, int), int> solucoes;
+            private Dictionary<(long, int), long> cache = [];
+
             private int utilizouCacheNVEzes = 0;
+            
+            public void InformacoesDebug()
+            {
+                Console.Write("Entrada: ");
+                Console.WriteLine(string.Join(" ", this.pedras));
+                Console.WriteLine($"Cache utilizado: {this.utilizouCacheNVEzes}/{this.cache.Count} ({this.utilizouCacheNVEzes * 1f / this.cache.Count:P2})");
+            }
 
             public Pedras(string input)
             {
                 pedras = Parser.ListaDeInts(input);
-                solucoes = [];
             }
 
-            private bool TratamentoDigitosPares(int entrada, out int numero1, out int numero2)
+            private bool TratamentoDigitosPares(long entrada, out long numero1, out long numero2)
             {
                 int digitos = 0;
-                int temp = entrada;
+                long temp = entrada;
                 while (temp > 0)
                 {
                     temp /= 10;
@@ -47,11 +54,11 @@ namespace AOC24.Solucoes
                 return true;
             }
 
-            private int PiscaPedra(int valor, int profundidade)
+            private long PiscaPedra(long valor, int profundidade)
             {
-                int Cacheia(int solucao)
+                long Cacheia(long solucao)
                 {
-                    this.solucoes.TryAdd((valor, profundidade), solucao);
+                    this.cache.TryAdd((valor, profundidade), solucao);
                     return solucao;
                 }
 
@@ -60,7 +67,7 @@ namespace AOC24.Solucoes
                     return 1;
                 }
 
-                if (this.solucoes.TryGetValue((valor, profundidade), out int saidaCache))
+                if (this.cache.TryGetValue((valor, profundidade), out long saidaCache))
                 {
                     utilizouCacheNVEzes++;
                     return saidaCache;
@@ -72,7 +79,7 @@ namespace AOC24.Solucoes
                 }
 
 
-                if (TratamentoDigitosPares(valor, out int numero1, out int numero2))
+                if (TratamentoDigitosPares(valor, out long numero1, out long numero2))
                 {
                     return 
                         Cacheia(
@@ -84,18 +91,14 @@ namespace AOC24.Solucoes
                 return Cacheia(PiscaPedra(valor * 2024, profundidade - 1));
             }
 
-            public int PiscaPedras(int vezes)
+            public long PiscaPedras(int vezes)
             {
-                int count = 0;
+                long count = 0;
 
                 foreach(int pedra in this.pedras)
                 {
                     count += PiscaPedra(pedra, vezes);
                 }
-
-                Console.Write("Entrada: ");
-                Console.WriteLine(string.Join(" ", this.pedras));
-                Console.WriteLine($"Cache utilizado: {this.utilizouCacheNVEzes}/{this.solucoes.Count} ({this.utilizouCacheNVEzes*1f/this.solucoes.Count:P2})");
 
                 return count;
             }
@@ -105,14 +108,18 @@ namespace AOC24.Solucoes
         {
             Pedras pedras = new(input);
 
-            int saida = pedras.PiscaPedras(75);
+            long saida = pedras.PiscaPedras(25);
 
             return saida.ToString();
         }
 
         public string SolucaoParte2(string input)
         {
-            return ":D";
+            Pedras pedras = new(input);
+
+            long saida = pedras.PiscaPedras(75);
+
+            return saida.ToString();
         }
     }
 }
