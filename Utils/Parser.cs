@@ -6,7 +6,7 @@ namespace AOC24.Utils;
 
 public static class Parser
 {
-    public static List<int> ListaDeInts(string input)
+    public static List<int> ListaDeIntsDeUnicoDigito(string input)
     {
         List<int> result = [];
 
@@ -18,6 +18,11 @@ public static class Parser
         }
 
         return result;
+    }
+
+    public static List<int> ListaDeInts(string input)
+    {
+        return input.Split(" ").Select(s => int.Parse(s)).ToList();
     }
 
     public static (List<(int, int)> regrasOrdenacao, List<List<int>> numeroPaginas) ParseiaRegrasManuais(string txt)

@@ -147,7 +147,7 @@ namespace AOC24.Solucoes
                 this.disco = [];
                 this.arquivos = [];
 
-                var listaParseada = Parser.ListaDeInts(input);
+                var listaParseada = Parser.ListaDeIntsDeUnicoDigito(input);
 
                 bool ehEspaco = false;
                 foreach (int tamanhoBloco in listaParseada)
