@@ -95,49 +95,38 @@ namespace AOC24.Solucoes
                     foreach (Direcao direcao in DirecaoUtils.Direcoes)
                     {
                         var posicaoAFrente = direcao.PosicaoAFrente(bloco);
-                        if (!blocos.Contains(posicaoAFrente))
+                        if (
+                            !blocos.Contains(posicaoAFrente) &&
+                            (!aplicaDesconto || !cercas.Contains(((posicaoAFrente), direcao)))
+                           )
                         {
-                            perimetro++;
-
-                            if (aplicaDesconto)
+                            if (!aplicaDesconto)
                             {
-                                cercas.Add((bloco, direcao));
+                                perimetro++;
+                                continue;
                             }
-                        }
-                    }
-                }
-
-                if (aplicaDesconto)
-                {
-                    HashSet<((int x, int y) pos, Direcao direcao)> cercasContabilizadas = [];
-                    int desconto = 0;
-
-                    foreach(var cerca in cercas)
-                    {
-                        if (cercasContabilizadas.Contains(cerca))
-                        {
-                            continue;
-                        }
-
-                        foreach(Direcao perpendicular in cerca.direcao.DirecoesPerpendiculares())
-                        {
-                            (int x, int y) novaPosicao = perpendicular.PosicaoAFrente(cerca.pos);
-                            while (cercas.Contains((novaPosicao, cerca.direcao)))
+                            
+                            if(cercas.Add((bloco, direcao)))
                             {
-                                if(cercasContabilizadas.Add((novaPosicao, cerca.direcao)))
+                                perimetro++;
+                            }
+
+                            foreach(var perpendicular in direcao.DirecoesPerpendiculares())
+                            {
+                                (int x, int y) proximaCerca = bloco;
+                                bool estaVazioAFrente;
+                                bool possuiElementoAoLado;
+
+                                do
                                 {
-                                    Console.WriteLine($"- {this.Planta}: Descontada Cerca em {novaPosicao} -> {cerca.direcao}");
-                                    desconto++;
-                                }
-
-                                novaPosicao = perpendicular.PosicaoAFrente(novaPosicao);
+                                    proximaCerca = perpendicular.PosicaoAFrente(proximaCerca);
+                                        
+                                    possuiElementoAoLado = this.blocos.Contains(proximaCerca);
+                                    estaVazioAFrente = !this.blocos.Contains(direcao.PosicaoAFrente(proximaCerca));
+                                } while (possuiElementoAoLado && estaVazioAFrente && cercas.Add((proximaCerca, direcao)));
                             }
                         }
                     }
-
-                    perimetro -= desconto;
-
-                    Console.WriteLine($"{this.Planta}: {this.Area} * {perimetro} = {this.Area * perimetro}");
                 }
 
                 return perimetro;
@@ -151,12 +140,6 @@ namespace AOC24.Solucoes
 
         public string SolucaoParte1(string input)
         {
-            input = @"AAAAAA
-AAAAAA
-AAAAAA
-AAAAAA
-AAAAAA
-AAAAAA".ReplaceLineEndings("\n");
             MapaDia12 mapa = new(Parser.MatrizDeChars(input));
 
             mapa.MapeiaRegioes();
@@ -166,16 +149,6 @@ AAAAAA".ReplaceLineEndings("\n");
 
         public string SolucaoParte2(string input)
         {
-            input = @"RRRRIICCFF
-RRRRIICCCF
-VVRRRCCFFF
-VVRCCCJFFF
-VVVVCJJCFE
-VVIVCCJJEE
-VVIIICJJEE
-MIIIIIJJEE
-MIIISIJEEE
-MMMISSJEEE".ReplaceLineEndings("\n");
             MapaDia12 mapa = new(Parser.MatrizDeChars(input));
 
             mapa.MapeiaRegioes();

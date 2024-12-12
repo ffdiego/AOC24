@@ -33,7 +33,7 @@ namespace AOC24.Comuns
                     return [Direcao.Leste, Direcao.Oeste];
                 case Direcao.Leste:
                 case Direcao.Oeste:
-                    return [Direcao.Leste, Direcao.Oeste];
+                    return [Direcao.Norte, Direcao.Sul];
                 default:
                     throw new ArgumentException();
             }
