@@ -15,7 +15,6 @@ namespace AOC24.Solucoes
             public List<Regiao> Regioes;
             public Dictionary<(int x, int y), Regiao> CoordenadaParaRegiao;
 
-
             private void TentaExpandirRegiao(Regiao regiao, (int x, int y) pos, Direcao direcaoOrigem)
             {
                 char planta = this.GetItem(pos);
@@ -24,7 +23,7 @@ namespace AOC24.Solucoes
                     return;
                 }
 
-                if (!regiao.blocos.Add(pos))
+                if (!regiao.blocosRegiao.Add(pos))
                 {
                     return;
                 }
@@ -64,9 +63,9 @@ namespace AOC24.Solucoes
                 }
             }
 
-            public long ValorTotalCercas() => this.Regioes.Sum(r => r.Area * r.Perimetro);
+            public long ValorTotalCercas() => this.Regioes.Sum(r => r.Area * r.Perimetro());
 
-            public long ValorTotalCercasDesconto() => this.Regioes.Sum(r => r.Area * r.PerimetroDesconto);
+            public long ValorTotalCercasDesconto() => this.Regioes.Sum(r => r.Area * r.Perimetro(aplicaDesconto: true));
 
             public MapaDia12(List<List<char>> mapa) : base(mapa) 
             {
@@ -78,25 +77,23 @@ namespace AOC24.Solucoes
         class Regiao
         {
             public char Planta { get; private set; }
-            public int Area { get => blocos.Count; }
-            public int Perimetro { get => CalculaPerimetro(); }
-            public int PerimetroDesconto { get => CalculaPerimetro(true); }
+            public int Area { get => blocosRegiao.Count; }
 
-            public HashSet<(int x, int y)> blocos = [];
+            public HashSet<(int x, int y)> blocosRegiao = [];
 
-            private int CalculaPerimetro(bool aplicaDesconto = false)
+            public int Perimetro(bool aplicaDesconto = false)
             {
                 HashSet<((int x, int y) pos, Direcao direcao)> cercas = [];
 
                 int perimetro = 0;
 
-                foreach (var bloco in blocos)
+                foreach (var bloco in blocosRegiao)
                 {
                     foreach (Direcao direcao in DirecaoUtils.Direcoes)
                     {
                         var posicaoAFrente = direcao.PosicaoAFrente(bloco);
                         if (
-                            !blocos.Contains(posicaoAFrente) &&
+                            !blocosRegiao.Contains(posicaoAFrente) &&
                             (!aplicaDesconto || !cercas.Contains(((posicaoAFrente), direcao)))
                            )
                         {
@@ -121,8 +118,8 @@ namespace AOC24.Solucoes
                                 {
                                     proximaCerca = perpendicular.PosicaoAFrente(proximaCerca);
                                         
-                                    possuiElementoAoLado = this.blocos.Contains(proximaCerca);
-                                    estaVazioAFrente = !this.blocos.Contains(direcao.PosicaoAFrente(proximaCerca));
+                                    possuiElementoAoLado = this.blocosRegiao.Contains(proximaCerca);
+                                    estaVazioAFrente = !this.blocosRegiao.Contains(direcao.PosicaoAFrente(proximaCerca));
                                 } while (possuiElementoAoLado && estaVazioAFrente && cercas.Add((proximaCerca, direcao)));
                             }
                         }
@@ -141,19 +138,31 @@ namespace AOC24.Solucoes
         public string SolucaoParte1(string input)
         {
             MapaDia12 mapa = new(Parser.MatrizDeChars(input));
-
             mapa.MapeiaRegioes();
 
-            return mapa.ValorTotalCercas().ToString();
+            int soma = 0;
+            Parallel.ForEach(mapa.Regioes, regiao =>
+            {
+                int precoCerca = regiao.Area * regiao.Perimetro();
+                Interlocked.Add(ref soma, precoCerca);
+            });
+
+            return soma.ToString();
         }
 
         public string SolucaoParte2(string input)
         {
             MapaDia12 mapa = new(Parser.MatrizDeChars(input));
-
             mapa.MapeiaRegioes();
 
-            return mapa.ValorTotalCercasDesconto().ToString();
+            int soma = 0;
+            Parallel.ForEach(mapa.Regioes, regiao =>
+            {
+                int precoCerca = regiao.Area * regiao.Perimetro(true);
+                Interlocked.Add(ref soma, precoCerca);
+            });
+
+            return soma.ToString();
         }
     }
 }
