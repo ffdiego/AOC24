@@ -9,7 +9,12 @@ namespace AOC24.Comuns
 {
     internal class Mapa
     {
-        private List<List<char>> mapa;
+        internal enum Direcao
+        {
+            Norte, Sul, Leste, Oeste, Nenhuma
+        }
+
+        protected List<List<char>> mapa;
         private char vazio;
 
         public Mapa(List<List<char>> mapa, char vazio = '.')
