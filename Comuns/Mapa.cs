@@ -9,11 +9,6 @@ namespace AOC24.Comuns
 {
     internal class Mapa
     {
-        internal enum Direcao
-        {
-            Norte, Sul, Leste, Oeste, Nenhuma
-        }
-
         protected List<List<char>> mapa;
         private char vazio;
 
@@ -25,6 +20,7 @@ namespace AOC24.Comuns
 
         public bool EstaDentroDoMapa(int x, int y) => (y >= 0 && x >= 0 && y < this.mapa.Count && x < this.mapa[y].Count);
 
+        public char GetItem((int x, int y)pos) => GetItem(pos.x, pos.y);
         public char GetItem(int x, int y)
         {
             if (!EstaDentroDoMapa(x, y))

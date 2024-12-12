@@ -16,38 +16,26 @@ namespace AOC24.Solucoes
             public Dictionary<(int x, int y), Regiao> CoordenadaParaRegiao;
 
 
-            private void TentaExpandirRegiao(Regiao regiao, int x, int y, Direcao direcaoOrigem)
+            private void TentaExpandirRegiao(Regiao regiao, (int x, int y) pos, Direcao direcaoOrigem)
             {
-                char planta = this.GetItem(x, y);
+                char planta = this.GetItem(pos);
                 if (planta != regiao.Planta)
                 {
                     return;
                 }
 
-                if (!regiao.blocoList.Add((x, y))) 
+                if (!regiao.blocos.Add(pos))
                 {
                     return;
                 }
 
-                this.CoordenadaParaRegiao.Add((x, y), regiao);
+                this.CoordenadaParaRegiao.Add(pos, regiao);
 
-                if (direcaoOrigem != Direcao.Norte)
+                foreach (var direcao in DirecaoUtils.Direcoes.Where(d => d != direcaoOrigem))
                 {
-                    TentaExpandirRegiao(regiao, x, y - 1, Direcao.Sul);
+                    var proximo = direcao.PosicaoAFrente(pos);
+                    TentaExpandirRegiao(regiao, proximo, direcao.Oposta());
                 }
-                if (direcaoOrigem != Direcao.Leste)
-                {
-                    TentaExpandirRegiao(regiao, x + 1, y, Direcao.Oeste);
-                }
-                if (direcaoOrigem != Direcao.Sul)
-                {
-                    TentaExpandirRegiao(regiao, x, y + 1, Direcao.Norte);
-                }
-                if (direcaoOrigem != Direcao.Oeste)
-                {
-                    TentaExpandirRegiao(regiao, x - 1, y, Direcao.Leste);
-                }
-
             }
 
             private void CriaRegiao(int x, int y)
@@ -62,7 +50,7 @@ namespace AOC24.Solucoes
 
                 this.Regioes.Add(regiao);
 
-                TentaExpandirRegiao(regiao, x, y, Direcao.Nenhuma);
+                TentaExpandirRegiao(regiao, (x, y), Direcao.Nenhuma);
             }
 
             public void MapeiaRegioes()
@@ -76,10 +64,9 @@ namespace AOC24.Solucoes
                 }
             }
 
-            public long ValorTotalCercas()
-            {
-                return this.Regioes.Sum(r => r.ValorCerca());
-            }
+            public long ValorTotalCercas() => this.Regioes.Sum(r => r.Area * r.Perimetro);
+
+            public long ValorTotalCercasDesconto() => this.Regioes.Sum(r => r.Area * r.PerimetroDesconto);
 
             public MapaDia12(List<List<char>> mapa) : base(mapa) 
             {
@@ -91,54 +78,85 @@ namespace AOC24.Solucoes
         class Regiao
         {
             public char Planta { get; private set; }
-            public int Area { get => blocoList.Count; }
+            public int Area { get => blocos.Count; }
             public int Perimetro { get => CalculaPerimetro(); }
-            private int perimetro;
-            public HashSet<(int x, int y)> blocoList = [];
+            public int PerimetroDesconto { get => CalculaPerimetro(true); }
 
-            public long ValorCerca() => this.Area * this.Perimetro;
+            public HashSet<(int x, int y)> blocos = [];
 
-            private int CalculaPerimetro()
+            private int CalculaPerimetro(bool aplicaDesconto = false)
             {
-                if (this.perimetro != -1) 
-                {
-                    return this.perimetro;
-                }
+                HashSet<((int x, int y) pos, Direcao direcao)> cercas = [];
 
                 int perimetro = 0;
 
-                foreach (var bloco in blocoList)
+                foreach (var bloco in blocos)
                 {
-                    if (!blocoList.Contains((bloco.x + 1, bloco.y     ))) perimetro++;
-                    if (!blocoList.Contains((bloco.x - 1, bloco.y     ))) perimetro++;
-                    if (!blocoList.Contains((bloco.x    , bloco.y + 1 ))) perimetro++;
-                    if (!blocoList.Contains((bloco.x    , bloco.y - 1 ))) perimetro++;
+                    foreach (Direcao direcao in DirecaoUtils.Direcoes)
+                    {
+                        var posicaoAFrente = direcao.PosicaoAFrente(bloco);
+                        if (!blocos.Contains(posicaoAFrente))
+                        {
+                            perimetro++;
+
+                            if (aplicaDesconto)
+                            {
+                                cercas.Add((bloco, direcao));
+                            }
+                        }
+                    }
                 }
 
-                this.perimetro = perimetro;
+                if (aplicaDesconto)
+                {
+                    HashSet<((int x, int y) pos, Direcao direcao)> cercasContabilizadas = [];
+                    int desconto = 0;
+
+                    foreach(var cerca in cercas)
+                    {
+                        if (cercasContabilizadas.Contains(cerca))
+                        {
+                            continue;
+                        }
+
+                        foreach(Direcao perpendicular in cerca.direcao.DirecoesPerpendiculares())
+                        {
+                            (int x, int y) novaPosicao = perpendicular.PosicaoAFrente(cerca.pos);
+                            while (cercas.Contains((novaPosicao, cerca.direcao)))
+                            {
+                                if(cercasContabilizadas.Add((novaPosicao, cerca.direcao)))
+                                {
+                                    Console.WriteLine($"- {this.Planta}: Descontada Cerca em {novaPosicao} -> {cerca.direcao}");
+                                    desconto++;
+                                }
+
+                                novaPosicao = perpendicular.PosicaoAFrente(novaPosicao);
+                            }
+                        }
+                    }
+
+                    perimetro -= desconto;
+
+                    Console.WriteLine($"{this.Planta}: {this.Area} * {perimetro} = {this.Area * perimetro}");
+                }
+
                 return perimetro;
             }
 
             public Regiao(char planta)
             {
                 Planta = planta;
-                this.perimetro = -1;
             }
         }
 
         public string SolucaoParte1(string input)
         {
-//            input = @"RRRRIICCFF
-//RRRRIICCCF
-//VVRRRCCFFF
-//VVRCCCJFFF
-//VVVVCJJCFE
-//VVIVCCJJEE
-//VVIIICJJEE
-//MIIIIIJJEE
-//MIIISIJEEE
-//MMMISSJEEE".ReplaceLineEndings("\n");
-
+            input = @"AAAAAA
+AAAAAA
+AAAAAA
+AAAAAA
+AAAAAA
+AAAAAA".ReplaceLineEndings("\n");
             MapaDia12 mapa = new(Parser.MatrizDeChars(input));
 
             mapa.MapeiaRegioes();
@@ -148,7 +166,21 @@ namespace AOC24.Solucoes
 
         public string SolucaoParte2(string input)
         {
-            return 0.ToString();
+            input = @"RRRRIICCFF
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCJFFF
+VVVVCJJCFE
+VVIVCCJJEE
+VVIIICJJEE
+MIIIIIJJEE
+MIIISIJEEE
+MMMISSJEEE".ReplaceLineEndings("\n");
+            MapaDia12 mapa = new(Parser.MatrizDeChars(input));
+
+            mapa.MapeiaRegioes();
+
+            return mapa.ValorTotalCercasDesconto().ToString();
         }
     }
 }
