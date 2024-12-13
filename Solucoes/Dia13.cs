@@ -10,65 +10,53 @@ namespace AOC24.Solucoes
 {
     internal class Maquina()
     {
-        public const int LIMITE_POR_BOTAO = 100;
-        public const int PRECO_BOTAO_A = 3;
-        public const int PRECO_BOTAO_B = 1;
+        private const long ADICIONAL_PARTE2 = 10000000000000;
+        private const int LIMITE_POR_BOTAO = 100; // isso aqui não ocorre no puzzle :)
+        private const int PRECO_BOTAO_A = 3;
+        private const int PRECO_BOTAO_B = 1;
 
-        public (int x, int y) BotaoA;
-        public (int x, int y) BotaoB;
+        public (int x, int y) A;
+        public (int x, int y) B;
         public (int x, int y) Premio;
 
-        private bool PassouDoPremio((int x, int y)pos)
+        public long Soluciona(bool parte2 = false)
         {
-            return pos.x > Premio.x || pos.y > Premio.y;
-        } 
+            bool EhInteiro(double n) => n % 1 == 0;
 
-        public int Soluciona()
-        {
-            Dictionary<(int a, int b), (int, int)> cache = [];
-            bool premioMultiploEmX = true;
-            bool premioMultiploEmY = true;
-            if (!premioMultiploEmX || !premioMultiploEmY)
+            (long x, long y) premio = parte2 ? (Premio.x + ADICIONAL_PARTE2, Premio.y + ADICIONAL_PARTE2) : Premio;
+ 
+            double pressionadasBotaoA = (double)(premio.x * B.y - premio.y * B.x) / (A.x * B.y - A.y * B.x);
+            double pressionadasBotaoB = (double)(premio.x - A.x * pressionadasBotaoA) / (B.x);           
+
+            if (!EhInteiro(pressionadasBotaoA) || 
+                !EhInteiro(pressionadasBotaoB))
             {
                 return 0;
             }
 
-            (int x, int y) resultante = (0, 0);
-            for (int a = 0; a <= LIMITE_POR_BOTAO; a++)
-            {
-                for (int b = 0; b <= LIMITE_POR_BOTAO; b++)
-                {
-                    resultante = (BotaoA.x * a + BotaoB.x * b, BotaoA.y * a + BotaoB.y * b);
-
-                    if (PassouDoPremio(resultante))
-                    {
-                        break;
-                    }
-
-                    cache.Add((a, b), resultante);
-                }
-            }
-
-
-
-            return cache.Count(c => c.Value == this.Premio);
+            return (long)pressionadasBotaoA * PRECO_BOTAO_A + (long)pressionadasBotaoB * PRECO_BOTAO_B;
         }
     }
 
     internal class Dia13 : ISolucionador
     {
 
-
         public string SolucaoParte1(string input)
         {
             List<Maquina> maquinas = ParsersEspecificos.CriaMaquinas(input);
+
+            long solucao = maquinas.Sum(m => m.Soluciona());
             
-            return maquinas[0].Soluciona().ToString();
+            return solucao.ToString();
         }
 
         public string SolucaoParte2(string input)
         {
-            return "0";
+            List<Maquina> maquinas = ParsersEspecificos.CriaMaquinas(input);
+
+            long solucao = maquinas.Sum(m => m.Soluciona(true));
+
+            return solucao.ToString();
         }
     }
 }

@@ -25,8 +25,8 @@ namespace AOC24.Utils
                 {
                     list.Add(new Maquina()
                     {
-                        BotaoA = (int.Parse(match.Groups["X1"].Value), int.Parse(match.Groups["Y1"].Value)),
-                        BotaoB = (int.Parse(match.Groups["X2"].Value), int.Parse(match.Groups["Y2"].Value)),
+                        A = (int.Parse(match.Groups["X1"].Value), int.Parse(match.Groups["Y1"].Value)),
+                        B = (int.Parse(match.Groups["X2"].Value), int.Parse(match.Groups["Y2"].Value)),
                         Premio = (int.Parse(match.Groups["X3"].Value), int.Parse(match.Groups["Y3"].Value)),
                     });
                 }
