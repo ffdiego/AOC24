@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
 using AOC24.Solucoes;
+using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace AOC24.Utils;
 
@@ -14,24 +16,55 @@ public class GerenciadorDeSolucoes
         Inputs = new();
     }
 
+    private (string solucao, string tempo) Roda(ISolucionador solucionador, string input, bool parte2 = false)
+    {
+        Stopwatch sw = Stopwatch.StartNew();
+        string solucao = parte2 ? solucionador.SolucaoParte2(input) : solucionador.SolucaoParte1(input);
+        sw.Stop();
+
+        string solucaoFormatada = $"[underline {(parte2 ? "Red" : "Green")}]{solucao}[/]";
+
+        return (solucaoFormatada, $"({sw.ElapsedMilliseconds}ms)");
+    }
+
     public async Task ObtemSolucaoDoDia(int dia)
     {
         string input = await ObtemInput(dia);
 
         ISolucionador solucionador = InstanciarSolucao(dia);
 
-        Console.WriteLine($"=== Dia {dia:D2} ===");
-        Stopwatch swParte1 = Stopwatch.StartNew();
-        string solucaoParte1 = solucionador.SolucaoParte1(input);
-        swParte1.Stop();
-        Console.WriteLine($"Parte1: {solucaoParte1} ({swParte1.ElapsedMilliseconds}ms)");
+        AnsiConsole.Clear();
+        Rule titulo = new Rule("Advent of Code 2024");
+        titulo.LeftJustified().DoubleBorder();
+        titulo.Style = Style.Parse("green");
+        AnsiConsole.Write(titulo);
 
-        Stopwatch swParte2 = Stopwatch.StartNew();
-        string solucaoParte2 = solucionador.SolucaoParte2(input);
-        swParte2.Stop();
-        Console.WriteLine($"Parte2: {solucaoParte2} ({swParte2.ElapsedMilliseconds}ms)");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"(Dia {dia:D2})");
+        AnsiConsole.MarkupLine($"[blue][link]{AOCClient.baseURI}day/{dia}/[/][/]");
+        AnsiConsole.WriteLine();
 
-        Console.WriteLine();
+        Table table = new Table();
+        table.RoundedBorder();
+        table.AddColumn("Parte");
+        table.AddColumn("Solução");
+        table.AddColumn("Tempo");
+        table.AddRow(new Text("1").Centered());
+        table.AddRow(new Text("2").Centered());
+
+        AnsiConsole.Live(table)
+            .Start(ctx =>
+        {
+            var parte1 = Roda(solucionador, input, false);
+            table.UpdateCell(0, 1, parte1.solucao);
+            table.UpdateCell(0, 2, parte1.tempo);
+            ctx.Refresh();
+
+            var parte2 = Roda(solucionador, input, true);
+            table.UpdateCell(1, 1, parte2.solucao);
+            table.UpdateCell(1, 2, parte2.tempo);
+        });
+
     }
 
     public async Task<string> ObtemInput(int dia)

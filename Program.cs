@@ -28,7 +28,6 @@ internal class Application
 
     public async Task Run(string? arg) 
     {
-        Console.WriteLine("AOC'24");
         List<int> diasARodar = [];
 
         if (string.IsNullOrWhiteSpace(arg)) 
