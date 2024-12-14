@@ -1,9 +1,17 @@
-﻿using System.Text.RegularExpressions;
+﻿using Raylib_cs;
+using System.Text.RegularExpressions;
 
 namespace AOC24.Solucoes;
 
 internal class Dia14 : ISolucionador
 {
+    const int passos = 100;
+
+    const int largura = 101;
+    const int altura = 103;
+    const int corteQuadranteX = largura / 2;
+    const int corteQuadranteY = altura / 2;
+
     internal class Robo
     {
         public (int x, int y) PosicaoInicial;
@@ -14,7 +22,13 @@ internal class Dia14 : ISolucionador
             int Wrap(int i, int limit)
             {
                 int wrapped = i % limit;
-                return (wrapped >= 0) ? wrapped : (limit - wrapped); 
+
+                if (wrapped < 0)
+                {
+                    wrapped += limit;
+                }
+
+                return (wrapped >= 0) ? wrapped : (limit - wrapped - 1); 
             }
             int x = PosicaoInicial.x + Velocidade.x * passos;
             int y = PosicaoInicial.y + Velocidade.y * passos;
@@ -43,45 +57,91 @@ internal class Dia14 : ISolucionador
         return robos;
     }
 
+    public static void ImprimeRobos(int passo, List<(int x, int y)> robos, int altura, int largura)
+    {
+        const int escala = 4;
+        Raylib.InitWindow(largura * escala, altura * escala, $"Dia14: Posição no segundo {passo}");
+
+        while (!Raylib.WindowShouldClose())
+        {
+            Raylib.BeginDrawing();
+            Raylib.ClearBackground(Color.White);
+            
+            foreach (var robo in robos) 
+            {
+                Raylib.DrawRectangle(robo.x * escala, robo.y * escala, escala, escala, Color.Green);
+            }
+
+            Raylib.EndDrawing();
+        }
+
+        Raylib.CloseWindow();
+    }
+
+    public static long FatorSeguranca(List<(int x, int y)> robos)
+    {
+        long q1 = robos.Count(c => c.x < corteQuadranteX && c.y < corteQuadranteY);
+        long q2 = robos.Count(c => c.x > corteQuadranteX && c.y < corteQuadranteY);
+        long q3 = robos.Count(c => c.x < corteQuadranteX && c.y > corteQuadranteY);
+        long q4 = robos.Count(c => c.x > corteQuadranteX && c.y > corteQuadranteY);
+
+        return q1 * q2 * q3 * q4;
+    }
+
     public string SolucaoParte1(string input)
     {
-        input = @"p=0,4 v=3,-3
-p=6,3 v=-1,-3
-p=10,3 v=-1,2
-p=2,0 v=2,-1
-p=0,0 v=1,3
-p=3,0 v=-2,-2
-p=7,6 v=-1,-3
-p=3,0 v=-1,-2
-p=9,3 v=2,3
-p=7,3 v=-1,2
-p=2,4 v=2,-3
-p=9,5 v=-3,-3".ReplaceLineEndings("\n");
         List<Robo> robos = GeraRobos(input);
-        List<(int x, int y)> coordenadasComRobos = [];
-        
-        const int altura = 7;
-        const int largura = 11;
-        const int passos = 100;
-        const int corteQuadranteX = largura / 2;
-        const int corteQuadranteY = altura / 2;
+        List<(int x, int y)> listaRobos = [];
 
         foreach (var robo in robos)
         {
-            coordenadasComRobos.Add(robo.SimulaPassos(passos, altura, largura));
-            Console.WriteLine(coordenadasComRobos[0]);
+            listaRobos.Add(robo.SimulaPassos(passos, altura, largura));
         }
 
-        int q1 = coordenadasComRobos.Count(c => c.x < corteQuadranteX && c.y < corteQuadranteY);
-        int q2 = coordenadasComRobos.Count(c => c.x > corteQuadranteX && c.y < corteQuadranteY);
-        int q3 = coordenadasComRobos.Count(c => c.x < corteQuadranteX && c.y > corteQuadranteY);
-        int q4 = coordenadasComRobos.Count(c => c.x > corteQuadranteX && c.y > corteQuadranteY);
+        long resposta = FatorSeguranca(listaRobos);
 
-        return $"{q1}*{q2}*{q3}*{q4}={q1*q2*q3*q4} (count={coordenadasComRobos.Count})";
+        return resposta.ToString();
     }
 
     public string SolucaoParte2(string input)
     {
-        return "-1";
+        List<Robo> robos = GeraRobos(input);
+        List<(int x, int y)> listaRobos = [];
+
+        int passos = 0;
+
+        (int passos, long fs) menorFS = (0, long.MaxValue);
+        (int passos, long fs) maiorFS = (0, 0);
+        while (passos < (altura * largura))
+        {
+            listaRobos.Clear();
+            foreach (var robo in robos)
+            {
+                listaRobos.Add(robo.SimulaPassos(passos, altura, largura));
+            }
+
+            long fs = FatorSeguranca(listaRobos);
+
+            if (fs > maiorFS.fs)
+            {
+                maiorFS = (passos, fs);
+            } 
+            else if (fs < menorFS.fs)
+            {
+                menorFS = (passos, fs);
+            }
+
+            passos++;
+        }
+
+        listaRobos.Clear();
+        foreach (var robo in robos)
+        {
+            listaRobos.Add(robo.SimulaPassos(menorFS.passos, altura, largura));
+        }
+        ImprimeRobos(passos, listaRobos, altura, largura);
+
+
+        return menorFS.passos.ToString();
     }
 }
