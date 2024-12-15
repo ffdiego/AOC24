@@ -19,7 +19,17 @@ public class GerenciadorDeSolucoes
     private (string solucao, string tempo) Roda(ISolucionador solucionador, string input, bool parte2 = false)
     {
         Stopwatch sw = Stopwatch.StartNew();
-        string solucao = parte2 ? solucionador.SolucaoParte2(input) : solucionador.SolucaoParte1(input);
+
+        string solucao;
+        try
+        {
+            solucao = parte2 ? solucionador.SolucaoParte2(input) : solucionador.SolucaoParte1(input);
+        }
+        catch (Exception ex)
+        {
+            solucao = ex.Message;
+        }
+
         sw.Stop();
 
         string solucaoFormatada = $"[underline {(parte2 ? "Red" : "Green")}]{solucao}[/]";

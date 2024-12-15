@@ -70,5 +70,22 @@ namespace AOC24.Comuns
                     throw new ArgumentException();
             }
         }
+
+        public static Direcao CharParaDirecao(char c)
+        {
+            switch (c)
+            {
+                case '^':
+                    return Direcao.Norte;
+                case 'v':
+                    return Direcao.Sul;
+                case '<':
+                    return Direcao.Oeste;
+                case '>':
+                    return Direcao.Leste;
+                default:
+                    return Direcao.Nenhuma;
+            }
+        } 
     }
 }
