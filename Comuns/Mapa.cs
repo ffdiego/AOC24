@@ -30,6 +30,7 @@ namespace AOC24.Comuns
         protected Mapa()
         {
             this.vazio = '.';
+            this.mapa = [];
         }
 
         public bool EstaDentroDoMapa(int x, int y) => (y >= 0 && x >= 0 && y < this.mapa.Count && x < this.mapa[y].Count);
@@ -43,6 +44,11 @@ namespace AOC24.Comuns
             }
 
             return mapa[y][x];
+        }
+
+        public void TrocaItem((int x, int y)pos1, (int x, int y) pos2)
+        {
+            (mapa[pos1.y][pos1.x], mapa[pos2.y][pos2.x]) = (mapa[pos2.y][pos2.x], mapa[pos1.y][pos1.x]);
         }
 
         public int GetItemInt(int x, int y)
