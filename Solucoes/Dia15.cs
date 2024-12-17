@@ -33,7 +33,7 @@ namespace AOC24.Solucoes
                 this.posicaoRobo = this.PegaTodasOcorrenciasDe(ROBO, remove: true).Single();
             }
 
-            protected override bool EmpurraObjeto((int x, int y) posicao, Direcao direcao)
+            protected override bool EmpurraObjeto((int x, int y) posicao, Direcao direcao, HashSet<(int x, int y)> posicoesEmpurradas)
             {
                 char item = GetItem(posicao);
 
@@ -51,19 +51,19 @@ namespace AOC24.Solucoes
 
                         var posicao2frente = direcao.PosicaoAFrente(posicao2);
 
-                        if (EmpurraObjeto(direcao.PosicaoAFrente(posicao), direcao) && EmpurraObjeto(direcao.PosicaoAFrente(posicao2), direcao))
+                        if (EmpurraObjeto(posicao1frente, direcao, posicoesEmpurradas) 
+                            && EmpurraObjeto(posicao2frente, direcao, posicoesEmpurradas))
                         {
-                            this.TrocaItem(posicao, posicao1frente);
-                            this.TrocaItem(posicao2, posicao2frente);
-
-                            return true; ;
+                            posicoesEmpurradas.Add(posicao);
+                            posicoesEmpurradas.Add(posicao2);
+                            return true;
                         }
                     } 
                     else
                     {
-                        if (EmpurraObjeto(direcao.PosicaoAFrente(posicao), direcao))
+                        if (EmpurraObjeto(direcao.PosicaoAFrente(posicao), direcao, posicoesEmpurradas))
                         {
-                            this.TrocaItem(posicao, posicao1frente);
+                            posicoesEmpurradas.Add(posicao);
                             return true;
                         }
                     }
@@ -87,7 +87,7 @@ namespace AOC24.Solucoes
                 this.posicaoRobo = this.PegaTodasOcorrenciasDe(ROBO, remove: true).Single();
             }
 
-            protected virtual bool EmpurraObjeto((int x, int y) posicao, Direcao direcao)
+            protected virtual bool EmpurraObjeto((int x, int y) posicao, Direcao direcao, HashSet<(int x, int y)> posicoesEmpurradas)
             {
                 char item = GetItem(posicao);
 
@@ -99,10 +99,9 @@ namespace AOC24.Solucoes
                 if (item == CAIXA)
                 {
                     var posicaoAFrente = direcao.PosicaoAFrente(posicao);
-                    if (EmpurraObjeto(posicaoAFrente, direcao))
+                    if (EmpurraObjeto(posicaoAFrente, direcao, posicoesEmpurradas))
                     {
-                        this.TrocaItem(posicao, posicaoAFrente);
-
+                        posicoesEmpurradas.Add(posicao);
                         return true;
                     }
 
@@ -133,9 +132,15 @@ namespace AOC24.Solucoes
             {
                 var destino = direcao.PosicaoAFrente(posicaoRobo);
 
-                if (!EmpurraObjeto(destino, direcao))
+                HashSet<(int x, int y)> posicoesEmpurradas = [];
+                if (!EmpurraObjeto(destino, direcao, posicoesEmpurradas))
                 {
                     return;
+                }
+
+                foreach (var posicao in posicoesEmpurradas)
+                {
+                    this.TrocaItem(posicao, direcao.PosicaoAFrente(posicao));
                 }
 
                 this.posicaoRobo = destino;
@@ -143,7 +148,7 @@ namespace AOC24.Solucoes
 
             public void AbreJanelaComRender(bool interativa = true)
             {
-                int escala = 1080 / Math.Max(this.Largura, this.Altura);
+                int escala = (int)((1080 / Math.Max(this.Largura, this.Altura)) * (double)0.8);
                 void DesenhaComCor((int x, int y) posicao, Color cor, bool objetoGordo = false)
                 {
                     int mult_largura = (objetoGordo ? 2 : 1);
@@ -232,6 +237,8 @@ namespace AOC24.Solucoes
                 mapa15.MoveRobo(direcao);
             }
 
+            //mapa15.AbreJanelaComRender();
+
             return mapa15.SomaGPSCoordenadasCaixas().ToString();
         }
 
@@ -246,6 +253,8 @@ namespace AOC24.Solucoes
             {
                 mapa15.MoveRobo(direcao);
             }
+
+            //mapa15.AbreJanelaComRender();
 
             return mapa15.SomaGPSCoordenadasCaixas().ToString();
         }
