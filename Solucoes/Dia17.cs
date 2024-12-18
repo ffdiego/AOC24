@@ -10,18 +10,23 @@ namespace AOC24.Solucoes
     {
         internal class CPU
         {
+            private readonly int[] programa;
+            private readonly int a_inicial;
+            private readonly int b_inicial;
+            private readonly int c_inicial;
+
+
             private int a;
             private int b;
             private int c;
             private int ip;
-            private int[] programa;
+
+            private bool jumped;
 
             private int op => programa[ip + 1];
-            private int combo => Combo();
-            private Action funcao => Funcao();
             private string saida;
 
-            private Action Funcao()
+            private Action GetFuncao()
             {
                 switch (programa[ip])
                 {
@@ -46,7 +51,7 @@ namespace AOC24.Solucoes
                 }
             }
 
-            private int Combo() 
+            private int GetCombo() 
             {
                 switch (op)
                 {
@@ -67,7 +72,7 @@ namespace AOC24.Solucoes
 
             private void adv_0()
             {
-                a = a >> combo;
+                a = a >> GetCombo();
             }
 
             private void bxl_1()
@@ -77,13 +82,14 @@ namespace AOC24.Solucoes
 
             private void bst_2()
             {
-                b = combo & 0b111;
+                b = GetCombo() & 0b111;
             }
 
             private void jnz_3()
             {
                 if (a == 0) return;
                 ip = op;
+                jumped = true;
             }
 
             private void bxc_4()
@@ -93,30 +99,48 @@ namespace AOC24.Solucoes
 
             private void out_5()
             {
-                this.saida += (combo % 8).ToString();
+                string saidaFuncao = (GetCombo() % 8).ToString();
+                this.saida += saidaFuncao;
             }
 
             private void bdv_6()
             {
-                b = a >> combo;
+                b = a >> GetCombo();
             }
 
             private void cdv_7()
             {
-                c = a >> combo;
+                c = a >> GetCombo();
+            }
+
+            private void Reset()
+            {
+                this.saida = string.Empty;
+                this.a = a_inicial;
+                this.b = b_inicial;
+                this.c = c_inicial;
+                this.ip = 0;
+                this.jumped = false;
             }
 
             public string Run()
             {
-                this.saida = string.Empty;
+                Reset();
                 while (true)
                 {
                     if (ip >= (programa.Count() - 1)) break;
 
-                    Action funcaoARodar = this.funcao;
-                    this.funcao.Invoke();
+                    Action funcao = this.GetFuncao();
+                    funcao.Invoke();
 
-                    if (funcaoARodar != this.jnz_3) ip += 2;
+                    if (jumped) 
+                    { 
+                        jumped = false; 
+                    } 
+                    else
+                    {
+                        ip += 2;
+                    }
                 }
 
                 return string.Join(",", saida.ToCharArray());
@@ -125,26 +149,17 @@ namespace AOC24.Solucoes
             public CPU(string txt)
             {
                 string[] linhas = txt.ReplaceLineEndings("\n").Split("\n");
-                ip = 0;
+                this.saida = string.Empty;
 
-                a = int.Parse(linhas[0].Substring(12));
-                b = int.Parse(linhas[1].Substring(12));
-                c = int.Parse(linhas[2].Substring(12));
-                ip = 0;
-                saida = string.Empty;
-                programa = linhas[4].Substring(9).Split(",").Select(n => int.Parse(n)).ToArray();
+                a_inicial = int.Parse(linhas[0].Substring(12));
+                b_inicial = int.Parse(linhas[1].Substring(12));
+                c_inicial = int.Parse(linhas[2].Substring(12));
+                programa = linhas[4].Substring(9).Split(",").Select(int.Parse).ToArray();
             }
         }
 
         public string SolucaoParte1(string input)
         {
-            input = @"Register A: 729
-Register B: 0
-Register C: 0
-
-Program: 0,1,5,4,3,0"
-.ReplaceLineEndings("\n");
-
             CPU cpu = new(input);
 
 
