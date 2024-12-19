@@ -42,6 +42,11 @@ internal class Application
             diasARodar.AddRange(this.gerenciadorDeSolucoes.DiasComSolucao());
         }
 
+        else if (int.TryParse(arg, out int dia))
+        {
+            diasARodar.Add(dia);
+        }
+
         foreach(int dia in diasARodar)
         {
             await this.gerenciadorDeSolucoes.ObtemSolucaoDoDia(dia);

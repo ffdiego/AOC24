@@ -6,7 +6,7 @@ namespace AOC24.Utils;
 public class AOCClient : IDisposable
 {
     public const string baseURI = "https://adventofcode.com/2024/";
-    private const string envSessao = "aoc24-session";
+    private const string envSessao = "aocsession";
     private string pastaCacheInputs;
     private HttpClient httpClient;
     public AOCClient()
