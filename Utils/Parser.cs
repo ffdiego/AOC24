@@ -55,7 +55,7 @@ public static class Parser
     {
         List<List<char>> listaDeListas = new();
 
-        foreach (string line in txt.Split('\n'))
+        foreach (string line in txt.ReplaceLineEndings("\n").Split('\n'))
         {
             listaDeListas.Add(line.ToList());
         }
