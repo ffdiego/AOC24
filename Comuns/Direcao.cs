@@ -71,21 +71,19 @@ namespace AOC24.Comuns
             }
         }
 
-        public static Direcao CharParaDirecao(char c)
+        private static readonly Dictionary<char, Direcao> CharParaDirecaoMap = new Dictionary<char, Direcao>
         {
-            switch (c)
-            {
-                case '^':
-                    return Direcao.Norte;
-                case 'v':
-                    return Direcao.Sul;
-                case '<':
-                    return Direcao.Oeste;
-                case '>':
-                    return Direcao.Leste;
-                default:
-                    return Direcao.Nenhuma;
-            }
-        } 
+            { '^', Direcao.Norte },
+            { 'v', Direcao.Sul },
+            { '<', Direcao.Oeste },
+            { '>', Direcao.Leste }
+        };
+
+        private static readonly Dictionary<Direcao, char> DirecaoParaCharMap = CharParaDirecaoMap
+            .ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+
+        public static Direcao CharParaDirecao(char c) => CharParaDirecaoMap[c];
+
+        public static char ParaChar(this Direcao d) => DirecaoParaCharMap[d];
     }
 }
