@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.Intrinsics.X86;
 using AOC24.Comuns;
+using Raylib_cs;
 
 namespace AOC24.Solucoes;
 
@@ -22,15 +23,23 @@ public class Dia21 : ISolucionador
     internal class Keypad : Mapa 
     {
         private const char botaoA = 'A';
-        public Dictionary<(char partida, char destino), Direcao[]> caminhosOtimizados;
+        public Dictionary<(char partida, char destino), List<List<Direcao>>> caminhosOtimizados;
 
         public Keypad(string input) : base(input)
         {
             caminhosOtimizados = MapeiaMenoresDistanciasEntreBotoes();
         }
 
-        public string DigitaSequencia(string sequencia)
+        public string GeraSequenciaTeclas(string sequencia)
         {
+            IEnumerable<char> CaminhoEntreBotoes(char botaoAtual, char botaoDestino)
+            {
+                List<List<Direcao>> passos = this.caminhosOtimizados[(botaoAtual, botaoDestino)];
+                IEnumerable<char> setas = passos[0].Select(p => p.ParaChar()).Append(botaoA);
+
+                return setas;
+            }
+
             char botaoAtual = botaoA;
 
             List<char> botoesNecessarios = [];
@@ -44,29 +53,53 @@ public class Dia21 : ISolucionador
             return string.Concat(botoesNecessarios.ToArray());
         }
 
-        private IEnumerable<char> CaminhoEntreBotoes(char botaoAtual, char botaoDestino)
+        public string DigitaSequencia(string sequencia)
         {
-            Direcao[] passos = this.caminhosOtimizados[(botaoAtual, botaoDestino)];
-            IEnumerable<char> setas = passos.Select(p => p.ParaChar()).Append(botaoA);
+            Posicao posicao = PegaTodasOcorrenciasDe(botaoA).Single();
 
-            return setas;
+            List<char> botoesPressionados = [];
+
+            foreach (char tecla in sequencia)
+            {
+                if (tecla == botaoA)
+                {
+                    botoesPressionados.Add(GetItem(posicao));
+                    continue;
+                }
+
+                Direcao direcao = DirecaoUtils.CharParaDirecao(tecla);
+                posicao = direcao.PosicaoAFrente(posicao);
+            }
+
+            return string.Concat(botoesPressionados.ToArray());
         }
 
-        private Direcao[] EncontraMelhorCaminho(char botaoPartida, char botaoDestino) 
+        private List<List<Direcao>> EncontraMelhoresCaminho(char botaoPartida, char botaoDestino) 
         {
             Posicao posicaoInicial = this.PegaTodasOcorrenciasDe(botaoPartida).Single();
 
-            HashSet<Posicao> visitados = [];
-            PriorityQueue<(Posicao, List<Direcao>, int custo), int> lugaresPravisitar = new();
-            lugaresPravisitar.Enqueue((posicaoInicial, [], 0), 0);
+            PriorityQueue<(Posicao, List<Direcao>, HashSet<Posicao>, int custo), int> lugaresPravisitar = new();
+            lugaresPravisitar.Enqueue((posicaoInicial, [], [posicaoInicial], 0), 0);
+
+            (List<List<Direcao>> caminhos, int custo) melhorSolucao = ([], int.MaxValue);
 
             while (lugaresPravisitar.Count > 0)
             {
-                (Posicao posicao, List<Direcao> caminho, int custo) = lugaresPravisitar.Dequeue();
+                (Posicao posicao, List<Direcao> caminho, HashSet<Posicao> visitados, int custo) = lugaresPravisitar.Dequeue();
 
                 if (GetItem(posicao) == botaoDestino) 
                 {
-                    return [.. caminho];
+                    if (custo < melhorSolucao.custo)
+                    {
+                        melhorSolucao.custo = custo;
+                        melhorSolucao.caminhos = [caminho];
+                    }
+                    else if (custo == melhorSolucao.custo)
+                    {
+                        melhorSolucao.caminhos.Add(caminho);
+                    }
+
+                    continue;
                 }
 
                 foreach (Direcao direcao in DirecaoUtils.Direcoes) 
@@ -74,20 +107,22 @@ public class Dia21 : ISolucionador
                     Posicao nova = direcao.PosicaoAFrente(posicao);
                     char botaoNaPosicao = this.GetItem(nova);
 
-                    if (botaoNaPosicao != default && botaoNaPosicao != this.vazio && visitados.Add(nova)) 
+                    if (botaoNaPosicao == default || botaoNaPosicao == this.vazio || visitados.Contains(nova))
                     {
-                        List<Direcao> novoCaminho = [.. caminho];
-                        novoCaminho.Add(direcao);
-                        lugaresPravisitar.Enqueue((nova, novoCaminho, custo + 1), custo + 1);
+                        continue;
                     }
+
+                    int novoCusto = custo + 1 + (caminho.LastOrDefault() != direcao ? 1000 : 0);
+
+                    lugaresPravisitar.Enqueue((nova, [.. caminho, direcao], [.. visitados, nova], novoCusto), novoCusto);
                 }  
             }
 
-            return [];
+            return melhorSolucao.caminhos;
         }
-        private Dictionary<(char partida, char destino), Direcao[]> MapeiaMenoresDistanciasEntreBotoes() 
+        private Dictionary<(char partida, char destino), List<List<Direcao>>> MapeiaMenoresDistanciasEntreBotoes() 
         {
-            Dictionary<(char partida, char destino), Direcao[]> caminhosOtimizados = [];
+            Dictionary<(char partida, char destino), List<List<Direcao>>> caminhosOtimizados = [];
 
             IEnumerable<char> botoes = this.mapa
                 .SelectMany(x => x.Distinct())
@@ -97,7 +132,7 @@ public class Dia21 : ISolucionador
             {
                 foreach (char botaoDestino in botoes.Where(b => b != botaoPartida)) 
                 {
-                    caminhosOtimizados.Add((botaoPartida, botaoDestino), EncontraMelhorCaminho(botaoPartida, botaoDestino));
+                    caminhosOtimizados.Add((botaoPartida, botaoDestino), EncontraMelhoresCaminho(botaoPartida, botaoDestino));
                 }
 
                 caminhosOtimizados.Add((botaoPartida, botaoPartida), []);
@@ -112,26 +147,25 @@ public class Dia21 : ISolucionador
 
     public int CalculaComplexidade(string codigo) 
     {
-        var seq1 = numpad.DigitaSequencia(codigo);
-        var seq2 = dirpad.DigitaSequencia(seq1);
-        var seq3 = dirpad.DigitaSequencia(seq2);
+        var seq1 = numpad.GeraSequenciaTeclas(codigo);
+        var seq2 = dirpad.GeraSequenciaTeclas(seq1);
+        var seq3 = dirpad.GeraSequenciaTeclas(seq2);
 
         int valor = int.Parse(codigo.Replace("A", ""));
+
+        Console.WriteLine(codigo);
         Console.WriteLine($"{seq3.Length} * {valor} = {seq3.Length * valor}");
+        Console.WriteLine();
 
         return seq3.Length * valor;
     }
 
     public string SolucaoParte1(string input)
     {
-        input = @"029A
-980A
-179A
-456A
-379A";
+        input = @"379A";
         int complexidade = 0;
 
-        foreach (string codigo in input.Split(Environment.NewLine))
+        foreach (string codigo in input.ReplaceLineEndings(Environment.NewLine).Split(Environment.NewLine))
         {
             complexidade += CalculaComplexidade(codigo);
         }
